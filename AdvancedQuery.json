@@ -260,8 +260,7 @@ GET /synonyms/default/_search
   }
 }
 
-####Stemming
-#Creating a test index
+###Thai Language Test
 PUT /stemming_test
 {
   "settings": {
@@ -270,22 +269,22 @@ PUT /stemming_test
         "synonym_test": {
           "type": "synonym",
           "synonyms": [
-            "firm => company",
-            "love, enjoy"
+            "องค์กร => บริษัท, ธุรกิจ",
+            "รัก, ชื่นชอบ, ชื่นชม"
           ]
         },
-        "stemmer_test" : {
-          "type" : "stemmer",
-          "name" : "english"
+        "thai_stop" : {
+          "type" : "stop",
+          "stopwords" : "_thai_"
         }
       },
       "analyzer": {
-        "my_analyzer": {
-          "tokenizer": "standard",
+        "thai_analyzer": {
+          "tokenizer": "thai",
           "filter": [
             "lowercase",
             "synonym_test",
-            "stemmer_test"
+            "thai_stop"
           ]
         }
       }
@@ -296,23 +295,29 @@ PUT /stemming_test
       "properties": {
         "description": {
           "type": "text",
-          "analyzer": "my_analyzer"
+          "analyzer": "thai_analyzer"
         }
       }
     }
   }
 }
+
+POST /stemming_test/_analyze
+{
+  "analyzer": "thai_analyzer",
+  "text": "ก็กูรักบริษัทของกูอ่ะ ใครจะทำไม"
+}
 #Adding a test document
 POST /stemming_test/default/1
 {
-  "description": "I love working for my firm!"
+  "description": "ก็กูรักบริษัทของกูอ่ะ ใครจะทำไม"
 }
 #Matching the document with the base word (work)
 GET /stemming_test/default/_search
 {
   "query": {
     "match": {
-      "description": "enjoy work"
+      "description": "ชื่นชอบ ธุรกิจ"
     }
   }
 }
@@ -321,7 +326,7 @@ GET /stemming_test/default/_search
 {
   "query": {
     "match": {
-      "description": "love working"
+      "description": "ชื่นชม องค์กร"
     }
   }
 }
@@ -330,7 +335,7 @@ GET /stemming_test/default/_search
 {
   "query": {
     "match": {
-      "description": "enjoy work"
+      "description": "ชื่นชม องค์กร"
     }
   },
   "highlight": {
