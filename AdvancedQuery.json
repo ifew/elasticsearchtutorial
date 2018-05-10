@@ -261,7 +261,7 @@ GET /synonyms/default/_search
 }
 
 ###Thai Language Test
-PUT /stemming_test
+PUT /thai_test
 {
   "settings": {
     "analysis": {
@@ -279,10 +279,16 @@ PUT /stemming_test
         }
       },
       "analyzer": {
-        "thai_analyzer": {
+        "p4f_analyzer": {
+          "type": "custom",
           "tokenizer": "thai",
+          "char_filter": [
+            "html_strip"
+          ],
           "filter": [
+            "standard",
             "lowercase",
+            "trim",
             "synonym_test",
             "thai_stop"
           ]
@@ -295,25 +301,26 @@ PUT /stemming_test
       "properties": {
         "description": {
           "type": "text",
-          "analyzer": "thai_analyzer"
+          "analyzer": "p4f_analyzer"
         }
       }
     }
   }
 }
 
-POST /stemming_test/_analyze
+POST /thai_test/_analyze
 {
-  "analyzer": "thai_analyzer",
+  "analyzer": "p4f_analyzer",
   "text": "ก็กูรักบริษัทของกูอ่ะ ใครจะทำไม"
 }
+
 #Adding a test document
-POST /stemming_test/default/1
+POST /thai_test/default/1
 {
   "description": "ก็กูรักบริษัทของกูอ่ะ ใครจะทำไม"
 }
 #Matching the document with the base word (work)
-GET /stemming_test/default/_search
+GET /thai_test/default/_search
 {
   "query": {
     "match": {
@@ -322,7 +329,7 @@ GET /stemming_test/default/_search
   }
 }
 #The query is stemmed, so the document still matches
-GET /stemming_test/default/_search
+GET /thai_test/default/_search
 {
   "query": {
     "match": {
